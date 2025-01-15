@@ -52,5 +52,54 @@ merged_data = merged_data[nrow(merged_data):1, ]
 
 #Can do graphs now
 n = length(merged_data$Date)
-ggplot(merged_data, aes(x = 1:n, y = merged_data$"SPX Open"[1:n])) + geom_line() +
-  xlab("Trading Day") + ylab("Value of SPX at Open ($)")
+
+ggplot(merged_data, aes(x = 1:n, y = `AAPL Close`[1:n])) + geom_line() +
+  xlab("Trading Day") + ylab("Value of AAPL at Close ($)")
+
+ggplot(merged_data, aes(x = 1:n, y = `KO Close`[1:n])) + geom_line() +
+  xlab("Trading Day") + ylab("Value of KO at Close ($)")
+
+ggplot(merged_data, aes(x = 1:n, y = `COST Close`[1:n])) + geom_line() +
+  xlab("Trading Day") + ylab("Value of COST at Close ($)")
+
+ggplot(merged_data, aes(x = 1:n, y = `NVDA Close`[1:n])) + geom_line() +
+  xlab("Trading Day") + ylab("Value of NVDA at Close ($)")
+
+ggplot(merged_data, aes(x = 1:n, y = `QQQ Close`[1:n])) + geom_line() +
+  xlab("Trading Day") + ylab("Value of QQQ at Close ($)")
+
+ggplot(merged_data, aes(x = 1:n, y = `XLY Close`[1:n])) + geom_line() +
+  xlab("Trading Day") + ylab("Value of XLY at Close ($)")
+
+ggplot(merged_data, aes(x = 1:n, y = `SPX Close`[1:n])) + geom_line() +
+  xlab("Trading Day") + ylab("Value of SPX at Close ($)")
+
+
+##For covariance matrixes
+closing_prices = merged_data[, c("AAPL Close", "KO Close", "COST Close", "NVDA Close", "QQQ Close", "XLY Close", "SPX Close")]
+
+cor(closing_prices)
+
+closing_prices_consumer = merged_data[, c("KO Close", "COST Close", "XLY Close", "SPX Close")]
+cor(closing_prices_consumer)
+
+closing_prices_technology = merged_data[, c("AAPL Close", "NVDA Close", "QQQ Close", "SPX Close")]
+cor(closing_prices_technology)
+
+
+
+#Autocorrelation stuff, will need to adjust the n here to just be over training data
+aapl_autocor = lm(`AAPL Close`[1:n-1]~`AAPL Close`[2:n], data = merged_data)
+ko_autocor = lm(`KO Close`[1:n-1]~`KO Close`[2:n], data = merged_data)
+cost_autocor = lm(`COST Close`[1:n-1]~`COST Close`[2:n], data = merged_data)
+nvda_autocor = lm(`NVDA Close`[1:n-1]~`NVDA Close`[2:n], data = merged_data)
+qqq_autocor = lm(`QQQ Close`[1:n-1]~`QQQ Close`[2:n], data = merged_data)
+xly_autocor = lm(`XLY Close`[1:n-1]~`XLY Close`[2:n], data = merged_data)
+spx_autocor = lm(`SPX Close`[1:n-1]~`SPX Close`[2:n], data = merged_data)
+acf(aapl_autocor$res, lag.max = 100)
+acf(ko_autocor$res, lag.max = 100) 
+acf(cost_autocor$res, lag.max = 100)
+acf(nvda_autocor$res, lag.max = 100) #has high lag ~43 and ~15
+acf(qqq_autocor$res, lag.max = 100)
+acf(xly_autocor$res, lag.max = 100)
+acf(spx_autocor$res, lag.max = 100)
