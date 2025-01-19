@@ -1,0 +1,130 @@
+---
+title: "STAT 27410 Final Project Proposal"
+author: "Andrew Su, Scarlett He"
+fontsize: 12pt
+bibliography: references.bib
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+  word_document: default
+  geometry: margin=0.75in
+fig_crop: no
+---
+
+```{r echo=FALSE, message=FALSE}
+library(knitr)
+knitr::opts_chunk$set(fig.width=4, fig.height=3, message=F, warning=F)
+options(scipen=6, digits=6)
+```
+
+# 1. Introduction
+
+It goes without saying that managing a good investment portfolio is complicated. On top of having to pick what specifically to invest in, other uncontrollable factors, such as market dynamics or economic conditions, only exist to further complicate things. It is generally agreed upon that a well-constructed portfolio is diversified across sectors, asset classes, all while carrying and managing risk. In spite of the challenges, portfolio management offers many people the opportunity to directly make money off their own decisions, and so for many makes the effort put in rewarding and worthwhile. As such, comparing traditional frequentist methods with bayesian approaches offers valuable insights into the effectiveness of these different strategies in addressing these complicated uncertainties. 
+
+To conduct our analysis, we will look into the historical stock prices for four individual stocks: 
+
+* Apple Inc. Common Stock (AAPL) [@AAPL]
+* Coca-Cola Company (The) Common Stock (KO) [@KO]
+* Costco Wholesale Corporation Common Stock (COST) [@COST]
+* Advanced Micro Devices Inc. Common Stock (AMD) [@AMD]
+* Salesforce Inc. Common Stock (CRM) [@CRM]
+
+Two sector specific ETFS:
+
+* Invesco QQQ Trust (QQQ) [@QQQ]
+* the Consumer Discretionary SPDR Select Sector Fund (XLY) [@XLY]
+
+As well as S&P 500 index (SPX) [@SPX] as a baseline for comparison. 
+
+All data used is from the 3-year timespan of January 1st, 2022 to January 1st, 2025 (753 trading days) and obtained directly from the Nasdaq stock exchange. 
+
+There were a few reasons for the specific securities chosen. We focused on the Technology and Consumer industries, where for each industry we picked two to three individual companies and an ETF as a representative of the industry. In addition to this, we also included the S&P 500 index as a representative of overall economic performance. We wanted to ensure that there was variation within our selection of stocks - multiple industries were chosen, a mixture of defensive and cyclical stocks were considered and we chose to avoid companies that were too similar to one-another.
+
+For each of the securities, separate datasets were used. For each security, the data set include the following variables:
+
+* **Date**: The date of the trading day
+* **Close/Last**: The price of the security at the end of the trading day
+* **Volume**: The total number of shares traded during the trading day
+* **Open**: The price of the security at the start of the trading day
+* **High**: The highest price of the security during the entire trading day
+* **Low**: The lowest price of the security during the entire trading day
+
+For the purpose of our analysis, we will only be looking at the Date, Close/Last and Open categories across each of the securities. 
+
+
+# 2. Exploratory Data Analysis
+
+We will start by looking at the trends and changes in each of the securities over this 3 year period. 
+
+```{r, echo=FALSE}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/Closings.png")
+```
+
+These graphs show the trends of the 7 securities over the 3-year period. It can be noted that some graphs have similar trends. Thus, we look at correlation matrix of those stock, and we found the correlation is relatively high due to the choice of our stocks are all well known and having a high market share.
+```{r, echo=FALSE, out.width = "80%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/all_stocks_correlation.png")
+```
+
+```{r, echo=FALSE, out.width="60%"}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/consumer_stocks_correlation.png")
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/technology_stocks_correlation.png")
+```
+
+# 3. Frequentist Analysis
+
+Perform the frequentist analysis in this session.
+
+## 3.1 Proposed Frequentist Model(s)
+
+In this section, formulate the frequentist model(s) you are going to use to analyze your dataset. Be sure to first define the notations involved in the model(s).
+
+## 3.2 Fitting the Frequentist Model(s)
+
+In this section, 
+* discuss how you fit the proposed frequentist model(s).
+* report the results.
+* interpret the results in the context.
+
+# 4. Bayesian Analysis
+
+Propose the Bayesian analysis you will work on during the rest of the quarter in this session.
+
+## 4.1 Proposed Bayesian Model(s)
+
+In this section, 
+
+* formulate the Bayesian model(s) you are going to use to analyze your dataset. Be sure to first define the notations involved in the model(s).
+* discuss how you will elicit the prior(s).
+
+## 4.2 Fitting the Bayesian model(s)
+
+* Propose how you will fit the proposed Bayesian models.
+
+* Propose how you will perform sensitivity analysis of the Bayesian models, i.e., how the posterior distribution is affected by the prior 
+
+* Propose how you will check the MCMC convergence. 
+
+## 4.3 Prediction
+
+In this section, propose how you can make predictions using the Bayesian model. 
+
+# 5. Discussion
+
+In this section, discuss how you can improve your model.
+
+# 6. Contributions
+
+In this section, discuss the percentage of your contributions to the development final project proposal. Report the number of hours you have worked on the proposal, and the sections you are involved.
+
+Please also discuss briefly the contributions of your teammate(s), as well as the help and support you got from your teammates(s).
+
+# References
+<div id="refs"></div>
+
+# Appendix
+
+https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/27410%20Final%20Project%20Code.R
+
+https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/Scarlett_part1_code.R
+
