@@ -2,6 +2,7 @@ library(RCurl)
 library(dplyr)
 library(ggplot2)
 library(gridExtra)
+library(ggcorrplot)
 #Stocks
 apple = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/Apple%20Historical%20Stock%20Price.csv"))
 cocacola = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/Coca%20Cola%20Historical%20Stock%20Price.csv"))
@@ -51,19 +52,35 @@ plot = function(data, y) {
 plots = lapply(all_stock_close, function(stock_col) {
   plot(merged_data, stock_col)
 })
+marrangeGrob(grobs = plots, ncol = 2, nrow = 4)
+grid_plot = grid.arrange(grobs = plots, ncol = 2)
+ggsave(filename = "/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/Closings.png", 
+       plot = grid_plot, width = 12, height = 16)
 grid.arrange(grobs = plots, ncol = 2)
-
+ggsave(filename = "/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/Closings.png")
 
 
 ##For covariance matrixes
-closing_prices = merged_data[, all_stock_close]
-cor(closing_prices)
+cor_all = cor(merged_data[, all_stock_close])
+cor_consumer = cor(merged_data[, c("KO Close", "COST Close", "XLY Close", "SPX Close")])
+cor_technology = cor(merged_data[, c("AMD Close", "CRM Close","AAPL Close", "QQQ Close", "SPX Close")])
 
-closing_prices_consumer = merged_data[, c("KO Close", "COST Close", "XLY Close", "SPX Close")]
-cor(closing_prices_consumer)
+plot_correlation_matrix <- function(corr_matrix, title, filename) {
+  # Create the heatmap
+  p <- ggcorrplot(corr_matrix, 
+                  lab = TRUE, 
+                  lab_size = 3, 
+                  colors = c("blue", "white", "red"), 
+                  title = title, 
+                  ggtheme = theme_minimal())
+  
+  # Save the plot
+  ggsave(filename = filename, plot = p, width = 8, height = 6)
+}
 
-closing_prices_technology = merged_data[, c("AMD Close", "CRM Close","AAPL Close", "QQQ Close", "SPX Close")]
-cor(closing_prices_technology)
+plot_correlation_matrix(cor_all, "Correlation Matrix: All Stocks", "all_stocks_correlation.png")
+plot_correlation_matrix(cor_consumer, "Correlation Matrix: Consumer Stocks", "consumer_stocks_correlation.png")
+plot_correlation_matrix(cor_technology, "Correlation Matrix: Technology Stocks", "technology_stocks_correlation.png")
 
 
 #Autocorrelation stuff, will need to adjust the n here to just be over training data
@@ -76,4 +93,3 @@ lapply(all_stock_close, function(stock) {
   calculate_autocorr(merged_data, stock)
   readline("Press [Enter] to continue to the next plot...")
 })
-
