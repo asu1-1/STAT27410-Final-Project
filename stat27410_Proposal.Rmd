@@ -1,5 +1,5 @@
 ---
-title: "STAT 27410 Final Project Proposal"
+title: "STAT 27410 Final Project Proposal - A Bayesian Approach to Portfolio Management"
 author: "Andrew Su, Scarlett He"
 fontsize: 12pt
 bibliography: references.bib
@@ -20,9 +20,9 @@ options(scipen=6, digits=6)
 
 # 1. Introduction
 
-It goes without saying that managing a good investment portfolio is complicated. On top of having to pick what specifically to invest in, other uncontrollable factors, such as market dynamics or economic conditions, only exist to further complicate things. It is generally agreed upon that a well-constructed portfolio is diversified across sectors, asset classes, all while carrying and managing risk. In spite of the challenges, portfolio management offers many people the opportunity to directly make money off their own decisions, and so for many makes the effort put in rewarding and worthwhile. As such, comparing traditional frequentist methods with bayesian approaches offers valuable insights into the effectiveness of these different strategies in addressing these complicated uncertainties. 
+Portfolio management is a complex endeavor that involves not only selecting appropriate investments but also navigating the uncertainties posed by market dynamics and economic conditions. While diversification across sectors and asset classes is widely regarded as a cornerstone of effective portfolio construction, managing risk and optimizing returns remains a significant challenge. This study seeks to explore innovative approaches to enhance investment decision-making by comparing traditional frequentist methods with Bayesian techniques in the context of portfolio optimization.
 
-To conduct our analysis, we will look into the historical stock prices for four individual stocks: 
+Over a three-year period from January 1st, 2022, to January 1st, 2025, we analyze historical stock prices for five individual stocks:
 
 * Apple Inc. Common Stock (AAPL) [@AAPL]
 * Coca-Cola Company (The) Common Stock (KO) [@KO]
@@ -37,9 +37,9 @@ Two sector specific ETFS:
 
 As well as S&P 500 index (SPX) [@SPX] as a baseline for comparison. 
 
-All data used is from the 3-year timespan of January 1st, 2022 to January 1st, 2025 (753 trading days) and obtained directly from the Nasdaq stock exchange. 
+All data used is from the 3-year timespan of January 1st, 2022 to January 1st, 2025 (753 trading days) and obtained directly from the Nasdaq stock exchange. Data was sourced directly from the Nasdaq stock exchange, ensuring a robust empirical basis for our analysis.
 
-There were a few reasons for the specific securities chosen. We focused on the Technology and Consumer industries, where for each industry we picked two to three individual companies and an ETF as a representative of the industry. In addition to this, we also included the S&P 500 index as a representative of overall economic performance. We wanted to ensure that there was variation within our selection of stocks - multiple industries were chosen, a mixture of defensive and cyclical stocks were considered and we chose to avoid companies that were too similar to one-another.
+The selection of these securities reflects a strategic focus on diverse industries and market segments. We chose individual companies and ETFs to represent both the Technology and Consumer sectors, ensuring a mix of defensive and cyclical stocks while avoiding undue similarity among the selected investments. This approach aims to capture variations in market performance and provide a comprehensive view of portfolio dynamics.
 
 For each of the securities, separate datasets were used. For each security, the data set include the following variables:
 
@@ -50,7 +50,12 @@ For each of the securities, separate datasets were used. For each security, the 
 * **High**: The highest price of the security during the entire trading day
 * **Low**: The lowest price of the security during the entire trading day
 
-For the purpose of our analysis, we will only be looking at the Date, Close/Last and Open categories across each of the securities. 
+For the purpose of our analysis, we will only be looking at the Date, Close/Last and Open categories across each of the securities to build a fundamental AR model to capture essential market dynamics and trends.
+
+!!![TODO: ADD MODEL HERE]!!!
+
+
+This study not only sets the stage for a detailed comparison between frequentist and Bayesian methods in portfolio optimization but also provides insights into the important features to capture comprehensive market dynamics.
 
 
 # 2. Exploratory Data Analysis
