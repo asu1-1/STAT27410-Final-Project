@@ -71,7 +71,7 @@ These graphs show the trends of the 7 securities over the 3-year period. It can 
 knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/all_stocks_correlation.png")
 ```
 
-```{r, echo=FALSE, out.width="60%"}
+```{r, echo=FALSE, out.width="50%"}
 knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/consumer_stocks_correlation.png")
 knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/technology_stocks_correlation.png")
 ```

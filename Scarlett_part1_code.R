@@ -2,7 +2,7 @@ library(RCurl)
 library(dplyr)
 library(ggplot2)
 library(gridExtra)
-library(ggcorrplot)
+library(corrplot)
 #Stocks
 apple = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/Apple%20Historical%20Stock%20Price.csv"))
 cocacola = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/Coca%20Cola%20Historical%20Stock%20Price.csv"))
@@ -59,29 +59,62 @@ ggsave(filename = "/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project
 grid.arrange(grobs = plots, ncol = 2)
 ggsave(filename = "/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/Closings.png")
 
-
 ##For covariance matrixes
 cor_all = cor(merged_data[, all_stock_close])
 cor_consumer = cor(merged_data[, c("KO Close", "COST Close", "XLY Close", "SPX Close")])
 cor_technology = cor(merged_data[, c("AMD Close", "CRM Close","AAPL Close", "QQQ Close", "SPX Close")])
+# make.names(colnames(cor_all), unique = TRUE)
 
 plot_correlation_matrix <- function(corr_matrix, title, filename) {
-  # Create the heatmap
-  p <- ggcorrplot(corr_matrix, 
-                  lab = TRUE, 
-                  lab_size = 3, 
-                  colors = c("blue", "white", "red"), 
-                  title = title, 
-                  ggtheme = theme_minimal())
-  
-  # Save the plot
-  ggsave(filename = filename, plot = p, width = 8, height = 6)
+  p = corrplot(corr_matrix, 
+           method = "color",      # Color-based heatmap
+           tl.cex = 0.8,          # Adjust text size
+           tl.col = "black",      # Text color
+           addCoef.col = "white",
+           mar = c(0, 0, 1, 0),
+           title = title)
+  print(p)
+  # Save the plot (Somehow it just cannot save, save manually)
+  # ggsave(filename = filename, plot = replayPlot(p), width = 8, height = 6, units = "in", dpi = 300)
 }
 
 plot_correlation_matrix(cor_all, "Correlation Matrix: All Stocks", "all_stocks_correlation.png")
 plot_correlation_matrix(cor_consumer, "Correlation Matrix: Consumer Stocks", "consumer_stocks_correlation.png")
 plot_correlation_matrix(cor_technology, "Correlation Matrix: Technology Stocks", "technology_stocks_correlation.png")
 
+_______________________________________________________________________________________________
+
+plot_correlation_matrix <- function(corr_matrix, title, filename) {
+  colnames(corr_matrix) <- make.names(colnames(corr_matrix), unique = TRUE)
+  
+  # Create the heatmap with adjusted margins
+  p <- corrplot(corr_matrix, 
+                method = "color",      # Color-based heatmap
+                tl.cex = 0.8,          # Adjust text size
+                tl.col = "black",      # Text color
+                addCoef.col = "white",
+                title = title,
+                mar = c(0, 0, 1, 0))   # Reduced margins
+  
+  # Save the plot with increased dimensions
+  ggsave(filename = filename, plot = p, width = 10, height = 8, units = "in", dpi = 300)
+  dev.off()
+}
+
+# Example calls to save the plots
+plot_correlation_matrix(cor_all, "Correlation Matrix: All Stocks", "all_stocks_correlation.png")
+plot_correlation_matrix(cor_consumer, "Correlation Matrix: Consumer Stocks", "consumer_stocks_correlation.png")
+plot_correlation_matrix(cor_technology, "Correlation Matrix: Technology Stocks", "technology_stocks_correlation.png")
+
+
+
+
+
+
+
+
+
+____________________________________________________________________________
 
 #Autocorrelation stuff, will need to adjust the n here to just be over training data
 calculate_autocorr = function(data, stock_col, max_lag = 100) {
