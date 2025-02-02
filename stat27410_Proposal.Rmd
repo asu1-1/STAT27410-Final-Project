@@ -50,10 +50,26 @@ For each of the securities, separate datasets were used. For each security, the 
 * **High**: The highest price of the security during the entire trading day
 * **Low**: The lowest price of the security during the entire trading day
 
-For the purpose of our analysis, we will only be looking at the Date, Close/Last and Open categories across each of the securities to build a fundamental AR model to capture essential market dynamics and trends.
+For the purpose of our analysis, we will only be looking at the Date, Close/Last, Open and Volume categories across each of the securities to build a fundamental AR model to capture essential market dynamics and trends. 
 
 !!![TODO: ADD MODEL HERE]!!!
 
+To determine weights of allocation, we will run regression models to predict the future prices of each stock, calculating the percentage changes of each and assigning portfolio weights through convex optimization. \textit{STILL SUBJECT TO SPECIFIC MODEL CHANGES!}. For instance, for a certain stock A, our model will include the previous prices of stock A into our calculation for future price of A, while also incorporating the sector-ETF and SPX as measures of how well the economy is doing. For each tech stock, our model would look like:
+
+$$\text{stock_price_future} = \beta_1\text{stock_price_current} + \beta_2\text{stock_price_previous} + \beta_3 \text{QQQ_current} +\\ \beta_4 \text{SPY_current} + \text{covariance with other tech stocks}$$
+and for each consumer stock, it would look like:
+
+$$\text{stock_price_future} = \beta_1\text{stock_price_current} + \beta_2\text{stock_price_previous} + \beta_3 \text{XLY_current} +\\ \beta_4 \text{SPY_current} + \text{covariance with other consumer stocks}$$
+
+For all stocks, we will then compute the percentage change as
+
+$$\text{Stock_price_percentage_change} = \frac{(\text{stock_price_future} - \text{stock_price_current})}{\text{stock_price_current}}$$
+
+As opposed to a pure Auto-Regressive (AR) model, we will consider exogenous variables that aim to capture aspects of the economy that cannot be fully captured with our limited selection of stocks. This would allow for specific analysis while also factoring in more complex market trends. 
+
+With are computed stock price percentage changes, we will then use convex optimization to determine the portfolio weights, where volume traded will play a role in managing the risk assigned to each stock. 
+
+We will then compare these frequentist approaches with Bayesian methods, where we will assume a prior distribution (multivariate normal or student-t) on an asset, and then continuously update the distribution using the market data as the likelihood function to generate a posterior distribution that gives the most likely expected return for assets and measuring uncertainty through credible intervals. These returns can then be used in combination with the uncertainty measures to allocate portfolio weights.
 
 This study not only sets the stage for a detailed comparison between frequentist and Bayesian methods in portfolio optimization but also provides insights into the important features to capture comprehensive market dynamics.
 
