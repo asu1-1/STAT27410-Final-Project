@@ -70,7 +70,7 @@ For each consumer sector stock, the model is expressed as:
 $$
 \begin{aligned}
 P_{i,t+1} &= \beta_1 P_{i,t} + \beta_2 P_{i,t-1} + \\
-&\quad \beta_3 \text{XLY}_{t} + \beta_4 \text{SPY}_{t} + \sum_{j \neq i} \text{COV}(P_{i,t}, P_{j,t})
+&\quad \beta_3 \text{XLY}_{t} + \beta_4 \text{SPX}_{t} + \sum_{j \neq i} \beta_{5i} \text{COV}(P_{i,t}, P_{j,t})
 \end{aligned}
 $$
 
@@ -112,18 +112,77 @@ knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-P
 
 # 3. Frequentist Analysis
 
-Perform the frequentist analysis in this session.
-
 ## 3.1 Proposed Frequentist Model(s)
 
-In this section, formulate the frequentist model(s) you are going to use to analyze your dataset. Be sure to first define the notations involved in the model(s).
+### 3.1.1 Time Series Models
+
+Time series analysis emerges as a fundamental approach for financial data forecasting due to financial data's natrual of time dependency. It offers ways to locate patterns from historical fianncial data and form predictions to provide insights on investment decisions.
+
+The strength of time series analysis lies in its capacity to clean data and remove confounding variables and white noises. It also handles the non-independency between data in a sequence of time.
+
+In our methodological approach, the initial phase involved testing for stationarity in the financial time series data. TWe observed that the majority of financial time series exhibited non-stationary characteristics, which needs initial differencing for the data.We implemented first-order differencing, which shown successful transformation of the data into a stationary series, as confirmed by the Augmented Dickey-Fuller (ADF) test.
+
+Following the establishment of stationarity, we examined Autocorrelation Function (ACF) and Partial Autocorrelation Function (PACF) plots. These diagnostic tools provided crucial insights into the underlying structure of the time series, particularly in determining the presence and order of autoregressive (AR) and moving average (MA) components. The patterns observed in these plots served as preliminary indicators for model specification.
+
+To ensure optimal model selection, we fitted multiple ARIMA models to each financial time series, varying the orders of AR or MA each time, and compare them. Model performance was evaluated using established criteria such as AIC (Akaike Information Criterion) and BIC (Bayesian Information Criterion).
+
+In the end, we conducted model diagnostic by checking the residuals. We ensured model residuals fell within acceptable bounds and exhibited properties consistent with white noise processes. This validation process confirmed the adequacy of our selected models and their suitability for forecasting purposes.
+
+### 3.1.2 Multiple Linear Regress (MLR) Models
+
+Linear regression serves as a fundamental forecasting method. Multiple Linear Regression extends the basic model by incorporating various market factors, enabling deeper analysis of market behaviors.
+
+Our methodology implements recursive prediction, with the initial model expressed as:
+$$
+\begin{aligned}
+P_{i,t+1} &= \beta_1 P_{i,t} + \beta_2 P_{i,t-1} + \\
+&\quad \beta_3 \text{QQQ}_{t} + \beta_4 \text{SPX}_{t}
+\end{aligned}
+$$
+where $P_{i,t+1}$ represents the predicted price, $P_{i,t}$ and $P_{i,t-1}$ represent lagged prices, and $QQQ_t$, $SPX_t$ represent market indices at time t.
+
+Model validation employs multiple diagnostic tests. We examine R-squared values and adjusted R-squared to assess model fit, F-statistics for overall significance, and t-statistics for individual variable significance. Residual analysis confirms assumptions of normality, homoscedasticity, and independence.
+
+The recursive prediction process follows these steps:
+1. Predict future price using lagged values
+2. Update the dataset with predicted values
+3. Adjust lagged variables for subsequent predictions
+4. Iterate for next time period prediction
+This recursive approach enables continuous updating of predictions while maintaining the temporal structure of the data.
 
 ## 3.2 Fitting the Frequentist Model(s)
 
-In this section, 
-* discuss how you fit the proposed frequentist model(s).
-* report the results.
-* interpret the results in the context.
+## 3.2.1 Fitting Time Series Models
+
+We discovered that time series data is better for fitting short term future data. The variance of the prediction increases as long as forecasting period extends, limiting the ability to provide insightful prediction. 
+
+Using CRM stock as a case study, we identified ARIMA(2,1,1) as the optimal model specification through diagnostic testing. The model parameters indicate significant autoregressive and moving average components, suggesting the stock price exhibits both momentum and mean-reverting characteristics.
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/CRM_ARIMA_summary.png")
+```
+However, we discovered that mean of the prediction remains consistent, while the prediction intervals expand over time.
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/CRM_ARIMA_forecast.png")
+```
+Similar trends exist in other stocks, which limit the possibility for us to perform future portfolio optimization.
+
+
+### 3.2.2 Fitting the MLR Models
+
+Our Multiple Linear Regression model encounters same challenges in forecast accuracy. As predictions extend further from known data points, subsequent forecasts increasingly rely on previously predicted values rather than actual data. This dependency creates a compounding effect, leading to expanded variance and prediction intervals over time.
+
+Analysis of the model coefficients, as shown in the regression summary, reveals that the most significant predictor variable is the immediate lagged price, with the highest t-value and lowest p-value. This finding aligns with market efficiency principles, suggesting that recent price information captures the most relevant market signals.
+
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/CRM_MLR_summary.png")
+```
+However, the prediction is influenced by the fluctuations of stocks and is increased due to recursive prediction.
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/CRM_MLR.png")
+```
+The visualization shows how the prediction intervals expand significantly as the forecast horizon extends, forming a characteristic "cone of uncertainty." This pattern is particularly evident in the latter portion of the forecast period, where the model's predictions exhibit increased oscillation and deviation from the central trend. This behavior underscores the limitations of recursive prediction in long-term forecasting applications, suggesting the model may be more reliable for shorter-term predictions where the cumulative impact of forecast errors remains contained.
+
+\newpage
 
 # 4. Bayesian Analysis
 
