@@ -52,6 +52,7 @@ library(tidyr)
 library(ggplot2)
 library(reticulate)
 library(lubridate)
+library(Metrics)
 
 # Ensure reticulate uses a valid Python environment
 use_condaenv("env1", required = TRUE)
@@ -64,10 +65,110 @@ set.seed(42)
 
 # Normalize the data
 normalize = function(x) {
-  return((x - min(x)) / (max(x) - min(x)))
+  return (x / max(x))
 }
 normalized_data = stock_data %>%
   mutate(across(ends_with("Close"), normalize))
+
+names(normalized_data) = gsub(" ", "_", names(normalized_data))
+crm = normalized_data['CRM_Close']
+train_size = floor(nrow(crm)*0.6)
+test_size = floor(nrow(crm)*0.2)
+train_data = crm[1:train_size,]
+test_end = train_size+test_size
+test_data = crm[train_size:test_end,]
+predict_data = crm[test_end:nrow(crm),]
+
+library(keras)
+library(tensorflow)
+library(Metrics) # For RMSE calculation
+
+# Function to create LSTM model
+create_lstm_model <- function(units, activation, learning_rate, input_shape) {
+  model <- keras_model_sequential() %>%
+    layer_lstm(units = units, activation = activation, input_shape = input_shape) %>%
+    layer_dense(units = 1)
+  
+  optimizer <- optimizer_adam(learning_rate = learning_rate)
+  model %>% compile(
+    optimizer = optimizer,
+    loss = 'mean_squared_error'
+  )
+  
+  return(model)
+}
+
+# Define hyperparameters for tuning
+lstm_units <- c(50, 100, 200)
+lstm_activations <- c('relu', 'tanh')
+learning_rates <- c(0.001, 0.01, 0.1)
+epochs <- 100
+batch_size <- 32
+
+# Prepare training and testing data (ensure your data is normalized)
+train_data <- as.numeric(train_data) # Ensure train_data is numeric
+test_data <- as.numeric(test_data)   # Ensure test_data is numeric
+
+# Reshape data for LSTM (3D array: samples x timesteps x features)
+X_train <- array(train_data[-length(train_data)], dim = c(length(train_data) - 1, 1, 1))
+y_train <- train_data[-1]
+X_test <- array(test_data[-length(test_data)], dim = c(length(test_data) - 1, 1, 1))
+y_test <- test_data[-1]
+
+# Perform hyperparameter tuning for LSTM model
+best_rmse <- Inf
+best_lstm_model <- NULL
+
+for (units in lstm_units) {
+  for (activation in lstm_activations) {
+    for (learning_rate in learning_rates) {
+      # Create and train LSTM model
+      model <- create_lstm_model(units = units, activation = activation, learning_rate = learning_rate, input_shape = c(1, 1))
+      history <- model %>% fit(
+        X_train, y_train,
+        epochs = epochs,
+        batch_size = batch_size,
+        verbose = 0
+      )
+      
+      # Predict on test data
+      test_predictions <- model %>% predict(X_test)
+      
+      # Calculate RMSE
+      rmse <- rmse(y_test, test_predictions)
+      
+      # Check if current model has lower RMSE
+      if (rmse < best_rmse) {
+        best_rmse <- rmse
+        best_lstm_model <- model
+      }
+    }
+  }
+}
+
+steps = 25
+predicted = numeric(steps)
+curr = X_test
+for (i in 1:steps) {
+  prediction = best_lstm_model %>% predict(curr)
+  predicted[i] = prediction[length(prediction)]
+  curr = array(prediction[-length(prediction)], dim = c(length(prediction) - 1, 1, 1))
+}
+
+original_predict_data = predict_data[1:30]*max(stock_data['CRM Close'])
+original_lstm_predict_data = predicted*max(stock_data['CRM Close'])
+
+plot(original_lstm_predict_data, type = "l", col = "red", lwd = 2, ylim = range(c(original_predict_data, original_lstm_predict_data)),
+     main = "Predicted vs Actual Data", xlab = "Index", ylab = "Value")
+lines(original_predict_data[1:25], type = "l", col = "blue", lwd = 2)
+legend("topright", legend = c("Predicted", "Actual"), col = c("red", "blue"), lwd = 2)
+
+
+
+
+______________________LSTM MODEL END_____________________________
+______________________OMIT ALL DOWN THERE_________________________
+
 
 # Prepare data for LSTM (look-back period of 30 days)
 prepare_lstm_data = function(data, look_back) {
