@@ -157,11 +157,11 @@ This recursive approach enables continuous updating of predictions while maintai
 We discovered that time series data is better for fitting short term future data. The variance of the prediction increases as long as forecasting period extends, limiting the ability to provide insightful prediction. 
 
 Using CRM stock as a case study, we identified ARIMA(2,1,1) as the optimal model specification through diagnostic testing. The model parameters indicate significant autoregressive and moving average components, suggesting the stock price exhibits both momentum and mean-reverting characteristics.
-```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+```{r, echo=FALSE, out.width = "60%", fig.align='center'}
 knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/CRM_ARIMA_summary.png")
 ```
 However, we discovered that mean of the prediction remains consistent, while the prediction intervals expand over time.
-```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+```{r, echo=FALSE, out.width = "60%", fig.align='center'}
 knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/CRM_ARIMA_forecast.png")
 ```
 Similar trends exist in other stocks, which limit the possibility for us to perform future portfolio optimization.
@@ -182,6 +182,39 @@ knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-P
 ```
 The visualization shows how the prediction intervals expand significantly as the forecast horizon extends, forming a characteristic "cone of uncertainty." This pattern is particularly evident in the latter portion of the forecast period, where the model's predictions exhibit increased oscillation and deviation from the central trend. This behavior underscores the limitations of recursive prediction in long-term forecasting applications, suggesting the model may be more reliable for shorter-term predictions where the cumulative impact of forecast errors remains contained.
 
+## 3.3 Portfolio Weight Assignment
+Our portfolio optimization methodology leverages the \textit{PerformanceAnalytics} R package to construct an efficient portfolio based on historical daily returns. While we currently demonstrate the approach using historical data, the methodology is designed to accommodate predicted future data for dynamic weight assignment across different time periods.
+
+### Optimal Framework
+The optimal portfolio weights, determined through our analysis, are distributed as follows:
+```{r, echo=FALSE, out.width = "60%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/Portfolio_Weight_Assignment.png")
+```
+### Constraints and Objectives
+
+We use mean-variance optimization framework which incorporates two fundamental constraints:
+
+1. **Full Investment Constraint**:
+   \[ \sum_{i=1}^n w_i = 1 \]
+   where \(w_i\) represents the weight of asset i
+
+2. **Long-Only Constraint**:
+   \[ w_i \geq 0 \quad \forall i \]
+
+The objective function maximizes the Sharpe Ratio while considering two key components:
+
+\[ \text{Maximize} \quad \frac{E(R_p) - R_f}{\sigma_p} \]
+
+where: 
+
+* ***\(E(R_p)\)*** is the expected portfolio return
+* ***\(R_f\)*** is the risk-free rate
+* ***\(\sigma_p\)*** is the portfolio standard deviation
+
+We can see the result from the risk-reward visualization chart. This single point in  the chart indicates that the optimization algorithm has identified one specific portfolio allocation that maximizes the Sharpe ratio  given our constraints. 
+```{r, echo=FALSE, out.width = "60%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/risk_reward.png")
+```
 \newpage
 
 # 4. Bayesian Analysis

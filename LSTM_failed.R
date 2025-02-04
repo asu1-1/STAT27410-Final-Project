@@ -145,6 +145,7 @@ for (units in lstm_units) {
     }
   }
 }
+rmse(y_test,test_predictions)
 
 steps = 25
 predicted = numeric(steps)
