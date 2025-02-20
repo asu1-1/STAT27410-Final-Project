@@ -49,6 +49,9 @@ stock_data = merged_data[, close_columns]
 stock_data$Date = as.Date(stock_data$Date, format = "%m/%d/%Y")
 
 train_size = floor(2/3*nrow(stock_data))
+
+
+
 ts_stock = function(stock,idx) {
   after = stock %>% 
     select(1,idx) %>% 
@@ -59,7 +62,61 @@ ts_stock = function(stock,idx) {
   # Convert to ts object (assuming 252 trading days per year)
   price_ts = ts(price_zoo, start = c(start_year, start_day), frequency = 252)
 }
-CRM_ts = ts_stock(stock_data,2)
+
+crm = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/CRM.csv"))
+crm = filter_column(crm,"CRM")
+crm$Date <- as.Date(crm$Date, format = "%m/%d/%Y")
+crm <- crm %>%
+  arrange(Date) %>%  # Ensure data is sorted by date
+  mutate(Previous_Close = lag(`CRM Close`),
+         LR = log(`CRM Close` / Previous_Close)) %>% 
+  select(Date,LR,'CRM Close')
+crm = crm[2:nrow(crm),]
+train_idx = nrow(crm)*2/3
+crm_train = crm[1:train_idx,]
+crm_test = crm[train_idx+1:nrow(crm),]
+lr_ts <- ts(crm_train$LR, start = c(2020, as.numeric(format(min(crm$Date), "%j"))), frequency = 252)
+plot(lr_ts, main = "Time Series of log return", xlab = "Time", ylab = "LR", col = "blue", type = "l")
+adf.test(lr_ts, alternative = "stationary")
+par(mfrow = c(1, 2))
+acf(lr_ts)
+pacf(lr_ts)
+
+crm_106 <- arima(lr_ts,order = c(1,0,6))
+summary(crm_106)
+tsdiag(crm_106)
+crm_601 = arima(lr_ts, order = c(6,0,1))
+summary(crm_601)
+tsdiag(crm_601)
+
+forecast_values = forecast(crm_601,h=252)
+log_returns <- forecast_values$mean
+last_price <- tail(crm_train$'CRM Close', 1)
+last_date <- as.Date(tail(crm_train$Date, 1))
+forecasted_prices <- numeric(length(log_returns) + 1)
+forecasted_prices[1] <- last_price
+for (i in 2:length(forecasted_prices)) {
+  forecasted_prices[i] <- forecasted_prices[i - 1] * exp(log_returns[i - 1])
+  
+}
+forecasted_prices <- forecasted_prices[-1]
+forecast_dates <- seq(from = last_date + 1, by = "day", length.out = length(forecasted_prices))
+forecast_df <- data.frame(
+  Date = forecast_dates,
+  Close = forecasted_prices
+)
+crm_train_to_combine = crm_train %>% 
+  select(Date,'CRM Close')
+colnames(crm_train_to_combine)[which(names(crm_train_to_combine) == "CRM Close")] <- "Close"
+colnames(crm)[which(names(crm) == "CRM Close")] <- "Close"
+
+crm_combined <- rbind(crm_train_to_combine, forecast_df)
+plot(crm_train_to_combine$Date, crm_train_to_combine$Close, type = "l", col = "blue",
+     xlab = "Date", ylab = "Close Price", main = "CRM price and predicted price with log return ARIMA model",
+     xlim = range(crm_combined$Date))
+lines(forecast_df$Date, forecast_df$Close, col = "red")
+
+
 price_diff_1 = diff(CRM_ts)
 plot(price_diff_1, main = "First Difference of Stock Prices", ylab = "Differenced Prices")
 CRM_model_1 = arima(CRM_ts,order = c(0,1,1))

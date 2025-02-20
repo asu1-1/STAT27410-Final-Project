@@ -120,13 +120,65 @@ Time series analysis emerges as a fundamental approach for financial data foreca
 
 The strength of time series analysis lies in its capacity to clean data and remove confounding variables and white noises. It also handles the non-independency between data in a sequence of time.
 
-In our methodological approach, the initial phase involved testing for stationarity in the financial time series data. TWe observed that the majority of financial time series exhibited non-stationary characteristics, which needs initial differencing for the data.We implemented first-order differencing, which shown successful transformation of the data into a stationary series, as confirmed by the Augmented Dickey-Fuller (ADF) test.
+(ADD WHY LOG RETURN)
+We are trying to predict the log return of a stock price.
+The percentage change in stock price from time \( t \) to \( t+1 \), denoted as \( R_{i,t} \), is given by:
 
+$$
+R_{i,t} = \frac{P_{i,t+1} - P_{i,t}}{P_{i,t}}
+$$
+We are predicing $\ln R_{i,t}$.
+We use 2/3 of our data as training data.
+
+```{r, echo=FALSE, out.width = "80%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/log_return_plot.png")
+```
+We see the graph of log return shows like white noise around mean 0.
+
+In our methodological approach, the initial phase involved testing for stationarity in the financial time series data. The log transformation of the return is stationary according to the Augmented Dickey-Fuller (ADF) test.
+
+```{r, echo=FALSE, out.width = "60%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/Dickey-Fuller.png")
+```
 Following the establishment of stationarity, we examined Autocorrelation Function (ACF) and Partial Autocorrelation Function (PACF) plots. These diagnostic tools provided crucial insights into the underlying structure of the time series, particularly in determining the presence and order of autoregressive (AR) and moving average (MA) components. The patterns observed in these plots served as preliminary indicators for model specification.
+```{r, echo=FALSE, out.width = "80%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/acf_pacf.png")
+```
+The PACF suggests a potential AR component due to significant spikes at low lags.
+Since there is small spikes with some lag on the ACF plot, it does not give strong indication of MA component selection. We may explore different MA components.
+
+The lag of the spikes do not have a common divisor. Additionally, the period would be 252 trading days, and it is too large a number for the code to optimize the model. So we propose that there is no seasonality. 
 
 To ensure optimal model selection, we fitted multiple ARIMA models to each financial time series, varying the orders of AR or MA each time, and compare them. Model performance was evaluated using established criteria such as AIC (Akaike Information Criterion) and BIC (Bayesian Information Criterion).
 
-In the end, we conducted model diagnostic by checking the residuals. We ensured model residuals fell within acceptable bounds and exhibited properties consistent with white noise processes. This validation process confirmed the adequacy of our selected models and their suitability for forecasting purposes.
+We compare between two selections:  one focusing on AR component, and another model focusing on MA component. 
+
+First, We propose model ARIMA(6,0,1).
+```{r, echo=FALSE, out.width = "80%", fig.align='center', warning=FALSE}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/ts_601_summary.png")
+```
+The summary shows that the ar6 component have an coefficient absolute value greater than 0.05, meaning that this components perform some effect in the model.
+
+Then, We propose model ARIMA(1,0,6).
+```{r, echo=FALSE, out.width = "80%", fig.align='center', warning=FALSE}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/ts_106_summary.png")
+```
+Similarly, the ma6 component have an coefficient absolute value greater than 0.05, meaning that this components perform some effect in the model.
+
+We conducted model diagnostic by checking the residuals. We ensured model residuals fell within acceptable bounds and exhibited properties consistent with white noise processes. This validation process confirmed the adequacy of our selected models and their suitability for forecasting purposes.
+
+```{r, echo=FALSE, out.width = "80%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/ts_601_diag.png")
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/ts_106_diag.png")
+```
+The diagnostics show that the residuals are not correlated with each other, meaning that both of our proposed model works.
+
+When we compare the AIC and BIC, though the two values are similar for both graph, the model ARIMA(6,0,1) performs slightly better than ARIMA(1,0,6).
+```{r, echo=FALSE, out.width = "80%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/AICBIC_compare.png")
+```
+Thus, we choose our proposed model ARIMA(6,0,1) as our model for prediction for CRM price.
+The model parameters indicate significant autoregressive and moving average components, suggesting the stock price exhibits both momentum and mean-reverting characteristics.
 
 ### 3.1.2 Multiple Linear Regress (MLR) Models
 
@@ -156,15 +208,11 @@ This recursive approach enables continuous updating of predictions while maintai
 
 We discovered that time series data is better for fitting short term future data. The variance of the prediction increases as long as forecasting period extends, limiting the ability to provide insightful prediction. 
 
-Using CRM stock as a case study, we identified ARIMA(2,1,1) as the optimal model specification through diagnostic testing. The model parameters indicate significant autoregressive and moving average components, suggesting the stock price exhibits both momentum and mean-reverting characteristics.
-```{r, echo=FALSE, out.width = "60%", fig.align='center'}
-knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/CRM_ARIMA_summary.png")
-```
-However, we discovered that mean of the prediction remains consistent, while the prediction intervals expand over time.
+We discovered that the ARIMA model predicts a slight increase in mean stock price.
 ```{r, echo=FALSE, out.width = "60%", fig.align='center'}
 knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/CRM_ARIMA_forecast.png")
 ```
-Similar trends exist in other stocks, which limit the possibility for us to perform future portfolio optimization.
+
 
 
 ### 3.2.2 Fitting the MLR Models
