@@ -4,17 +4,17 @@ library(ggplot2)
 library(gridExtra)
 library(corrplot)
 #Stocks
-apple = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/Apple%20Historical%20Stock%20Price.csv"))
-cocacola = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/Coca%20Cola%20Historical%20Stock%20Price.csv"))
-costco = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/Costco%20Historical%20Stock%20Price.csv"))
+# apple = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/Apple%20Historical%20Stock%20Price.csv"))
+# cocacola = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/Coca%20Cola%20Historical%20Stock%20Price.csv"))
+# costco = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/Costco%20Historical%20Stock%20Price.csv"))
 crm = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/CRM.csv"))
-amd = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/AMD.csv"))
-#ETFS
-qqq = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/QQQ.csv"))
-xly = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/XLY_historical.csv"))
-#S&P
-spx = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/SPX.csv"))
-
+# amd = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/AMD.csv"))
+# #ETFS
+# qqq = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/QQQ.csv"))
+# xly = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/XLY_historical.csv"))
+# #S&P
+# spx = read.csv(text = getURL("https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/SPX.csv"))
+# 
 #filtering out unneeded columns
 filter_column = function(stock, stockName) {
   stock = stock[, c(1,2,4)]
@@ -23,26 +23,26 @@ filter_column = function(stock, stockName) {
   return (stock)
 }
 crm = filter_column(crm,"CRM")
-amd = filter_column(amd,"AMD")
-apple = filter_column(apple, "AAPL")
-cocacola = filter_column(cocacola, "KO")
-costco = filter_column(costco, "COST")
-qqq = filter_column(qqq, "QQQ")
-xly = filter_column(xly, "XLY")
+# amd = filter_column(amd,"AMD")
+# apple = filter_column(apple, "AAPL")
+# cocacola = filter_column(cocacola, "KO")
+# costco = filter_column(costco, "COST")
+# qqq = filter_column(qqq, "QQQ")
+# xly = filter_column(xly, "XLY")
 #so special spx! has no volumn
-spx = spx[, c(1,2,3)]
-colnames(spx)[c(2,3)] = c("SPX Close", "SPX Open")
+# spx = spx[, c(1,2,3)]
+# colnames(spx)[c(2,3)] = c("SPX Close", "SPX Open")
 
 #combining the files
-datasets = list(amd, crm, apple, cocacola, costco, qqq, xly, spx)
-merged_data = Reduce(function(x, y) merge(x, y, by = "Date", all = TRUE, sort = FALSE), datasets)
-merged_data = merged_data[c(9:761), ]
-merged_data = merged_data[nrow(merged_data):1, ]
-
-all_stock_close = c("CRM Close", "AMD Close", "AAPL Close", "KO Close", "COST Close")
-
-close_columns = c("Date",all_stock_close)
-stock_data = merged_data[, close_columns]
+# datasets = list(amd, crm, apple, cocacola, costco, qqq, xly, spx)
+# merged_data = Reduce(function(x, y) merge(x, y, by = "Date", all = TRUE, sort = FALSE), datasets)
+# merged_data = merged_data[c(9:761), ]
+# merged_data = merged_data[nrow(merged_data):1, ]
+# 
+# all_stock_close = c("CRM Close", "AMD Close", "AAPL Close", "KO Close", "COST Close")
+# 
+# close_columns = c("Date",all_stock_close)
+# stock_data = merged_data[, close_columns]
 
 # Load necessary libraries
 library(keras)
@@ -63,21 +63,33 @@ options(reticulate.ask = FALSE)
 # Simulate stock data for 5 stocks
 set.seed(42)
 
+crm = crm[c(1,2)]
+crm$Date = as.Date(crm$Date, format = "%m/%d/%Y")
+crm <- crm[order(crm$Date), ]
+crm <- crm %>%
+  mutate(prev_crm = lag(`CRM Close`),
+         crm_lr = log(`CRM Close` / prev_crm)
+  ) %>% 
+  select(Date,"CRM Close",crm_lr)
+crm = crm[2:nrow(crm),]
+
+
 # Normalize the data
 normalize = function(x) {
   return (x / max(x))
 }
-normalized_data = stock_data %>%
-  mutate(across(ends_with("Close"), normalize))
+normalized_data = crm %>%
+  mutate(across(crm_lr, normalize)) %>% 
+  select(crm_lr)
 
-names(normalized_data) = gsub(" ", "_", names(normalized_data))
-crm = normalized_data['CRM_Close']
-train_size = floor(nrow(crm)*0.6)
-test_size = floor(nrow(crm)*0.2)
-train_data = crm[1:train_size,]
+# names(normalized_data) = gsub(" ", "_", names(normalized_data))
+# crm = normalized_data['CRM_Close']
+train_size = floor(nrow(normalized_data)*3/6)
+test_size = floor(nrow(normalized_data)*1/6)
+train_data = normalized_data[1:train_size,]
 test_end = train_size+test_size
-test_data = crm[train_size:test_end,]
-predict_data = crm[test_end:nrow(crm),]
+test_data = normalized_data[train_size:test_end,]
+predict_data = normalized_data[test_end:nrow(normalized_data),]
 
 library(keras)
 library(tensorflow)
@@ -94,15 +106,14 @@ create_lstm_model <- function(units, activation, learning_rate, input_shape) {
     optimizer = optimizer,
     loss = 'mean_squared_error'
   )
-  
   return(model)
 }
 
 # Define hyperparameters for tuning
 lstm_units <- c(50, 100, 200)
 lstm_activations <- c('relu', 'tanh')
-learning_rates <- c(0.001, 0.01, 0.1)
-epochs <- 100
+learning_rates <- c(0.001, 0.01, 0.05)
+epochs <- 300
 batch_size <- 32
 
 # Prepare training and testing data (ensure your data is normalized)
@@ -115,9 +126,35 @@ y_train <- train_data[-1]
 X_test <- array(test_data[-length(test_data)], dim = c(length(test_data) - 1, 1, 1))
 y_test <- test_data[-1]
 
+# test to change lookback window
+# Define lookback window size
+# lookback <- 20
+# 
+# # Prepare X_train and y_train
+# X_train <- array(
+#   train_data[1:(length(train_data) - lookback)],
+#   dim = c(length(train_data) - lookback, lookback, 1)
+# )
+# y_train <- train_data[(lookback + 1):length(train_data)]
+# 
+# # Prepare X_test and y_test
+# X_test <- array(
+#   test_data[1:(length(test_data) - lookback)],
+#   dim = c(length(test_data) - lookback, lookback, 1)
+# )
+# y_test <- test_data[(lookback + 1):length(test_data)]
+
+
 # Perform hyperparameter tuning for LSTM model
 best_rmse <- Inf
 best_lstm_model <- NULL
+best_activation = ''
+best_learning_rate = 0
+
+
+mae <- function(y_true, y_pred) {
+  mean(abs(y_true - y_pred))
+}
 
 for (units in lstm_units) {
   for (activation in lstm_activations) {
@@ -141,11 +178,25 @@ for (units in lstm_units) {
       if (rmse < best_rmse) {
         best_rmse <- rmse
         best_lstm_model <- model
+        best_activation = activation
+        best_learning_rate = learning_rate
       }
     }
   }
 }
 rmse(y_test,test_predictions)
+history <- model %>% fit(
+  X_train, y_train,
+  epochs = epochs,
+  batch_size = batch_size,
+  validation_split = 0.2,
+  verbose = 1
+)
+
+plot(y_test, type = "l", col = "blue", lwd = 2, xlab = "Time", ylab = "Value", main = "Y_test vs Prediction")
+lines(test_predictions, col = "red", lwd = 2)
+legend("topright", legend = c("Predicted", "Actual"), col = c("red", "blue"), lwd = 2)
+
 
 steps = 25
 predicted = numeric(steps)
@@ -153,19 +204,41 @@ curr = X_test
 for (i in 1:steps) {
   prediction = best_lstm_model %>% predict(curr)
   predicted[i] = prediction[length(prediction)]
-  curr = array(prediction[-length(prediction)], dim = c(length(prediction) - 1, 1, 1))
+  curr = array(prediction[-1], dim = c(length(prediction) ,1, 1))
 }
 
-original_predict_data = predict_data[1:30]*max(stock_data['CRM Close'])
-original_lstm_predict_data = predicted*max(stock_data['CRM Close'])
+original_predict_data = predict_data[1:25]*max(crm["crm_lr"])
+original_lstm_predict_data = predicted*max(crm["crm_lr"])
 
 plot(original_lstm_predict_data, type = "l", col = "red", lwd = 2, ylim = range(c(original_predict_data, original_lstm_predict_data)),
-     main = "Predicted vs Actual Data", xlab = "Index", ylab = "Value")
+     main = "Predicted vs Actual Log Return", xlab = "Index", ylab = "Value")
 lines(original_predict_data[1:25], type = "l", col = "blue", lwd = 2)
-legend("topright", legend = c("Predicted", "Actual"), col = c("red", "blue"), lwd = 2)
+legend("bottomleft", legend = c("Predicted", "Actual"), col = c("red", "blue"), lwd = 2)
+
+# turn log return to price
+last_price <- crm[test_end,]$"CRM Close"
+last_date <- as.Date(crm[test_end,]$Date, format = "%m/%d/%Y")
+forecasted_prices <- numeric(length(predicted) + 1)
+forecasted_prices[1] <- last_price
+for (i in 2:length(forecasted_prices)) {
+  forecasted_prices[i] <- forecasted_prices[i - 1] * exp(predicted[i - 1])
+}
+forecasted_prices <- forecasted_prices[-1]
+forecast_dates <- seq(from = last_date + 1, by = "day", length.out = length(forecasted_prices))
+forecast_df <- data.frame(
+  Date = forecast_dates,
+  Close = forecasted_prices
+)
 
 
+plot(crm$Date[1:(test_end+80)], crm$"CRM Close"[1:(test_end+80)], type = "l", col = "blue",
+     xlab = "Date", ylab = "Close Price", main = "CRM price and predicted price with log return LSTM model")
+lines(forecast_df$Date, forecast_df$Close, col = "red")
+legend("topleft", legend = c("Actual", "Predicted"), col = c("blue", "red"), lty = 1)
 
+
+plot(crm$Date, crm$"CRM Close", type = "l", col = "blue",
+     xlab = "Date", ylab = "Close Price", main = "CRM Stock Price")
 
 ______________________LSTM MODEL END_____________________________
 ______________________OMIT ALL DOWN THERE_________________________

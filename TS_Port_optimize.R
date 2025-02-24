@@ -117,72 +117,72 @@ plot(crm_train_to_combine$Date, crm_train_to_combine$Close, type = "l", col = "b
 lines(forecast_df$Date, forecast_df$Close, col = "red")
 
 
-price_diff_1 = diff(CRM_ts)
-plot(price_diff_1, main = "First Difference of Stock Prices", ylab = "Differenced Prices")
-CRM_model_1 = arima(CRM_ts,order = c(0,1,1))
-CRM_model_2 = arima(CRM_ts,order = c(1,1,1))
-CRM_model_3 = arima(CRM_ts,order = c(2,1,1))
-CRM_model_4 = arima(CRM_ts,order = c(0,2,1))
-summary(CRM_model_3)
-forecast_values = forecast(CRM_model_2,h=252)
-autoplot(forecast_values) + 
-  ggtitle("ARIMA(2,1,1) Forecast for Next Year for CRM") +
-  xlab("Time") +
-  ylab("Stock Price") +
-  theme_minimal() 
-
-
-AMD_ts = ts_stock(stock_data,3)
-plot(AMD_ts)
-auto.arima(AMD_ts)
-price_diff_1 = diff(AMD_ts)
-plot(price_diff_1, main = "First Difference of Stock Prices", ylab = "Differenced Prices")
-AMD_model_1 = arima(AMD_ts,order = c(0,1,1))
-AMD_model_2 = arima(AMD_ts,order = c(1,1,0))
-AMD_model_3 = arima(AMD_ts,order = c(1,1,1))
-summary(AMD_model_1)
-summary(AMD_model_2)
-summary(AMD_model_3)
-forecast_values = forecast(AMD_model_2,h=252)
-autoplot(forecast_values) + 
-  ggtitle("ARIMA(0,1,1) Forecast for Next Year") +
-  xlab("Time") +
-  ylab("Stock Price") +
-  theme_minimal() 
-
-
-
-
-
-library(xts)
-library(PerformanceAnalytics)
-library(PortfolioAnalytics)
-library(ROI)
-library(ROI.plugin.quadprog)
-library(ROI.plugin.glpk)
-
-
-closing_price = stock_data[,-1]
-closing_prices_xts = xts(closing_price,order.by = stock_data$Date)
-
-daily_returns = na.omit(Return.calculate(closing_prices_xts))
-
-portfolio_spec = portfolio.spec(assets = colnames(daily_returns))
-portfolio_spec = add.constraint(portfolio = portfolio_spec, type = "full_investment")
-portfolio_spec = add.constraint(portfolio = portfolio_spec, type = "long_only")
-
-portfolio_spec = add.objective(portfolio = portfolio_spec, type = "return", name = "mean")
-portfolio_spec = add.objective(portfolio = portfolio_spec, type = "risk", name = "StdDev")
-
-optimized_portfolio = optimize.portfolio(
-  R = daily_returns,
-  portfolio = portfolio_spec,
-  optimize_method = "ROI",
-  maxSR = TRUE,
-  trace = TRUE
-)
-
-print(optimized_portfolio)
-
-# Step 5: Plot risk-return tradeoff chart
-chart.RiskReward(optimized_portfolio, risk.col = "StdDev", return.col = "mean")
+# price_diff_1 = diff(CRM_ts)
+# plot(price_diff_1, main = "First Difference of Stock Prices", ylab = "Differenced Prices")
+# CRM_model_1 = arima(CRM_ts,order = c(0,1,1))
+# CRM_model_2 = arima(CRM_ts,order = c(1,1,1))
+# CRM_model_3 = arima(CRM_ts,order = c(2,1,1))
+# CRM_model_4 = arima(CRM_ts,order = c(0,2,1))
+# summary(CRM_model_3)
+# forecast_values = forecast(CRM_model_2,h=252)
+# autoplot(forecast_values) + 
+#   ggtitle("ARIMA(2,1,1) Forecast for Next Year for CRM") +
+#   xlab("Time") +
+#   ylab("Stock Price") +
+#   theme_minimal() 
+# 
+# 
+# AMD_ts = ts_stock(stock_data,3)
+# plot(AMD_ts)
+# auto.arima(AMD_ts)
+# price_diff_1 = diff(AMD_ts)
+# plot(price_diff_1, main = "First Difference of Stock Prices", ylab = "Differenced Prices")
+# AMD_model_1 = arima(AMD_ts,order = c(0,1,1))
+# AMD_model_2 = arima(AMD_ts,order = c(1,1,0))
+# AMD_model_3 = arima(AMD_ts,order = c(1,1,1))
+# summary(AMD_model_1)
+# summary(AMD_model_2)
+# summary(AMD_model_3)
+# forecast_values = forecast(AMD_model_2,h=252)
+# autoplot(forecast_values) + 
+#   ggtitle("ARIMA(0,1,1) Forecast for Next Year") +
+#   xlab("Time") +
+#   ylab("Stock Price") +
+#   theme_minimal() 
+# 
+# 
+# 
+# 
+# 
+# library(xts)
+# library(PerformanceAnalytics)
+# library(PortfolioAnalytics)
+# library(ROI)
+# library(ROI.plugin.quadprog)
+# library(ROI.plugin.glpk)
+# 
+# 
+# closing_price = stock_data[,-1]
+# closing_prices_xts = xts(closing_price,order.by = stock_data$Date)
+# 
+# daily_returns = na.omit(Return.calculate(closing_prices_xts))
+# 
+# portfolio_spec = portfolio.spec(assets = colnames(daily_returns))
+# portfolio_spec = add.constraint(portfolio = portfolio_spec, type = "full_investment")
+# portfolio_spec = add.constraint(portfolio = portfolio_spec, type = "long_only")
+# 
+# portfolio_spec = add.objective(portfolio = portfolio_spec, type = "return", name = "mean")
+# portfolio_spec = add.objective(portfolio = portfolio_spec, type = "risk", name = "StdDev")
+# 
+# optimized_portfolio = optimize.portfolio(
+#   R = daily_returns,
+#   portfolio = portfolio_spec,
+#   optimize_method = "ROI",
+#   maxSR = TRUE,
+#   trace = TRUE
+# )
+# 
+# print(optimized_portfolio)
+# 
+# # Step 5: Plot risk-return tradeoff chart
+# chart.RiskReward(optimized_portfolio, risk.col = "StdDev", return.col = "mean")

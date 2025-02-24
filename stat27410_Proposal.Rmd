@@ -1,5 +1,5 @@
 ---
-title: "STAT 27410 Final Project Proposal - A Bayesian Approach to Portfolio Management"
+title: "STAT 27410 Final Project Proposal - Comparions between Frequentist and Bayesian Approach to SalesForce Stock Price Prediction"
 author: "Andrew Su, Scarlett He"
 fontsize: 12pt
 bibliography: references.bib
@@ -20,28 +20,21 @@ options(scipen=6, digits=6)
 
 # 1. Introduction
 
-Portfolio management is a complex endeavor that involves not only selecting appropriate investments but also navigating the uncertainties posed by market dynamics and economic conditions. While diversification across sectors and asset classes is widely regarded as a cornerstone of effective portfolio construction, managing risk and optimizing returns remains a significant challenge. This study seeks to explore innovative approaches to enhance investment decision-making by comparing traditional frequentist methods with Bayesian techniques in the context of portfolio optimization.
+Stock price prediction presents unique challenges that demand sophisticated statistical approaches for effective modeling under uncertainty. This study seeks to explore innovative approaches to enhance investment decision-making by comparing traditional frequentist methods with Bayesian techniques in the context of stock price prediction.
 
-Over a three-year period from January 1st, 2022, to January 1st, 2025, we analyze historical stock prices for five individual stocks:
+Over a three-year period from January 1st, 2022, to January 1st, 2025, we analyze historical stock prices for:
 
-* Apple Inc. Common Stock (AAPL) [@AAPL]
-* Coca-Cola Company (The) Common Stock (KO) [@KO]
-* Costco Wholesale Corporation Common Stock (COST) [@COST]
-* Advanced Micro Devices Inc. Common Stock (AMD) [@AMD]
 * Salesforce Inc. Common Stock (CRM) [@CRM]
 
-Two sector specific ETFS:
+We use sector specific ETF:
 
 * Invesco QQQ Trust (QQQ) [@QQQ]
-* the Consumer Discretionary SPDR Select Sector Fund (XLY) [@XLY]
 
 As well as S&P 500 index (SPX) [@SPX] as a baseline for comparison. 
 
 All data used is from the 3-year timespan of January 1st, 2022 to January 1st, 2025 (753 trading days) and obtained directly from the Nasdaq stock exchange. Data was sourced directly from the Nasdaq stock exchange, ensuring a robust empirical basis for our analysis.
 
-The selection of these securities reflects a strategic focus on diverse industries and market segments. We chose individual companies and ETFs to represent both the Technology and Consumer sectors, ensuring a mix of defensive and cyclical stocks while avoiding undue similarity among the selected investments. This approach aims to capture variations in market performance and provide a comprehensive view of portfolio dynamics.
-
-For each of the securities, separate datasets were used. For each security, the data set include the following variables:
+For each security, the data set include the following variables:
 
 * **Date**: The date of the trading day
 * **Close/Last**: The price of the security at the end of the trading day
@@ -50,63 +43,33 @@ For each of the securities, separate datasets were used. For each security, the 
 * **High**: The highest price of the security during the entire trading day
 * **Low**: The lowest price of the security during the entire trading day
 
-For the purpose of our analysis, we will only be looking at the Date, Close/Last, Open and Volume categories across each of the securities to build a fundamental AR model to capture essential market dynamics and trends. 
+For the purpose of our analysis, we will only be looking at the Date, Close/Last categories across each of the securities to build different models to capture essential market dynamics and trends. 
 
-To determine weights of allocation, we will run regression models to predict the future prices of each stock, calculating the percentage changes of each and assigning portfolio weights through convex optimization. For instance, for a certain stock A, our model will include the previous prices of stock A into our calculation for future price of A, while also incorporating the sector-ETF and SPX as measures of how well the economy is doing. 
-
-We define the stock price of stock \( i \) at time \( t \) as \( P_{i,t} \). The predictive model for stock prices is given as follows:
-
-For each technology sector stock, the model is expressed as:
-
-$$
-\begin{aligned}
-P_{i,t+1} &= \beta_1 P_{i,t} + \beta_2 P_{i,t-1} + \\
-&\quad \beta_3 \text{QQQ}_{t} + \beta_4 \text{SPY}_{t} + \sum_{j \neq i} \text{COV}(P_{i,t}, P_{j,t})
-\end{aligned}
-$$
-
-For each consumer sector stock, the model is expressed as:
-
-$$
-\begin{aligned}
-P_{i,t+1} &= \beta_1 P_{i,t} + \beta_2 P_{i,t-1} + \\
-&\quad \beta_3 \text{XLY}_{t} + \beta_4 \text{SPX}_{t} + \sum_{j \neq i} \beta_{5i} \text{COV}(P_{i,t}, P_{j,t})
-\end{aligned}
-$$
-
-The percentage change in stock price from time \( t \) to \( t+1 \), denoted as \( R_{i,t} \), is given by:
-
-$$
-R_{i,t} = \frac{P_{i,t+1} - P_{i,t}}{P_{i,t}}
-$$
-
-As opposed to a pure Auto-Regressive (AR) model, we will consider exogenous variables that aim to capture aspects of the economy that cannot be fully captured with our limited selection of stocks. This would allow for specific analysis while also factoring in more complex market trends. \textit{Note: Our models are subject to change}.
-
-With computed stock price percentage changes, we will use convex optimization to determine the portfolio weights, where volume traded will play a role in managing the risk assigned to each stock. 
-
-We will then compare these frequentist approaches with Bayesian methods, where we will assume a prior distribution (multivariate normal or student-t) on an asset, and then continuously update the distribution using the market data as the likelihood function to generate a posterior distribution that gives the most likely expected return for assets and measuring uncertainty through credible intervals. These returns can then be used in combination with the uncertainty measures to allocate portfolio weights.
-
-This study not only sets the stage for a detailed comparison between frequentist and Bayesian methods in portfolio optimization but also provides insights into the important features to capture comprehensive market dynamics.
+This study aims to provide insights into the important features to capture comprehensive market dynamics, and various uses of different models.
 
 \newpage
 
 # 2. Exploratory Data Analysis
 
-We will start by looking at the trends and changes in each of the securities over this 3 year period. 
+We will start by looking the trends and changes in CRM over this 3 year period. 
 
 ```{r, echo=FALSE, out.width = "90%", fig.align='center'}
-knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/Closings.png")
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/CRM_Price.png")
 ```
+The stock demonstrates significant price volatility, fluctuating between approximately 130 dollars and 350 dollars, with multiple distinct trading ranges and trend reversals.The stock displays cyclical behavior with distinct bull and bear phases.
 
-These graphs show the trends of the 7 securities over the 3-year period. It can be noted that some graphs have similar trends. Thus, we look at correlation matrix of those stock, and we found the correlation is relatively high due to the choice of our stocks are all well known and having a high market share.
-```{r, echo=FALSE, out.width = "80%", fig.align='center'}
-knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/all_stocks_correlation.png")
+```{r, echo=FALSE, out.width = "60%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/Index_Price.png")
 ```
+We explored the index price, and found that CRM and the index prices show similar patterns. Through further analysis, we see that CRM exhibits an exceptionally strong positive correlation with QQQ (0.93), demonstrating very tight co-movement with the tech sector.Similarly high correlation with SPX (0.91) indicates that CRM closely tracks the broader market performance. 
 
-```{r, echo=FALSE, out.width="50%"}
-knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/consumer_stocks_correlation.png")
-knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/technology_stocks_correlation.png")
-```
+These high correlations suggest that:
+
+* CRM is highly integrated with both tech sector and broader market movements
+
+* While company-specific factors exist, macro market forces significantly influence CRM's performance
+
+Thus, we will incorporate market index in our prediction to create more accurate prediction.
 
 \newpage
 
@@ -114,40 +77,44 @@ knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-P
 
 ## 3.1 Proposed Frequentist Model(s)
 
-### 3.1.1 Time Series Models
-
-Time series analysis emerges as a fundamental approach for financial data forecasting due to financial data's natrual of time dependency. It offers ways to locate patterns from historical fianncial data and form predictions to provide insights on investment decisions.
-
-The strength of time series analysis lies in its capacity to clean data and remove confounding variables and white noises. It also handles the non-independency between data in a sequence of time.
-
-(ADD WHY LOG RETURN)
-We are trying to predict the log return of a stock price.
+For all models, We choose to predict daily log returns. 
 The percentage change in stock price from time \( t \) to \( t+1 \), denoted as \( R_{i,t} \), is given by:
 
 $$
 R_{i,t} = \frac{P_{i,t+1} - P_{i,t}}{P_{i,t}}
 $$
-We are predicing $\ln R_{i,t}$.
-We use 2/3 of our data as training data.
+We first train and test the frequentist models using around $\frac{2}{3}$ of the data. Then turn $\ln R_{i,t}$ back to price to show the price prediction.
+
+We made this decision primarily for 2 reasons:
+
+1. Log returns tend to be more normally distributed than simple returns, which facilitates statistical modeling and analysis. 
+
+2.  Log transformation helps stabilize variance in the time series, reducing heteroscedasticity and making the data more suitable for statistical analysis.
 
 ```{r, echo=FALSE, out.width = "80%", fig.align='center'}
 knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/log_return_plot.png")
 ```
 We see the graph of log return shows like white noise around mean 0.
 
-In our methodological approach, the initial phase involved testing for stationarity in the financial time series data. The log transformation of the return is stationary according to the Augmented Dickey-Fuller (ADF) test.
+### 3.1.1 Time Series Models
+
+Time series analysis emerges as a fundamental approach for financial data forecasting due to financial data's natrual of time dependency. It offers ways to locate patterns from historical fianncial data and form predictions to provide insights on investment decisions.
+
+The strength of time series analysis lies in its capacity to clean data and remove confounding variables and white noises. It also handles the non-independency between data in a sequence of time.
+
+The initial phase involved testing for stationarity in the financial time series data. The log transformation of the return is stationary according to the Augmented Dickey-Fuller (ADF) test.
 
 ```{r, echo=FALSE, out.width = "60%", fig.align='center'}
 knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/Dickey-Fuller.png")
 ```
-Following the establishment of stationarity, we examined Autocorrelation Function (ACF) and Partial Autocorrelation Function (PACF) plots. These diagnostic tools provided crucial insights into the underlying structure of the time series, particularly in determining the presence and order of autoregressive (AR) and moving average (MA) components. The patterns observed in these plots served as preliminary indicators for model specification.
+Following the establishment of stationarity, we examined Autocorrelation Function (ACF) and Partial Autocorrelation Function (PACF) plots. They provide insights in determining the presence and order of autoregressive (AR) and moving average (MA) components. The patterns observed in these plots served as preliminary indicators for model specification.
 ```{r, echo=FALSE, out.width = "80%", fig.align='center'}
 knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/acf_pacf.png")
 ```
 The PACF suggests a potential AR component due to significant spikes at low lags.
-Since there is small spikes with some lag on the ACF plot, it does not give strong indication of MA component selection. We may explore different MA components.
+Since there is small spikes with some lag on the ACF plot, the graph does not give strong indication of MA component selection. We may explore different MA components.
 
-The lag of the spikes do not have a common divisor. Additionally, the period would be 252 trading days, and it is too large a number for the code to optimize the model. So we propose that there is no seasonality. 
+We chose not to incorporate seasonality because the spike lags do not share a common divisor. Additionally, the period would be 252 trading days, which is too large for the code to efficiently optimize the model.
 
 To ensure optimal model selection, we fitted multiple ARIMA models to each financial time series, varying the orders of AR or MA each time, and compare them. Model performance was evaluated using established criteria such as AIC (Akaike Information Criterion) and BIC (Bayesian Information Criterion).
 
@@ -167,7 +134,7 @@ Similarly, the ma6 component have an coefficient absolute value greater than 0.0
 
 We conducted model diagnostic by checking the residuals. We ensured model residuals fell within acceptable bounds and exhibited properties consistent with white noise processes. This validation process confirmed the adequacy of our selected models and their suitability for forecasting purposes.
 
-```{r, echo=FALSE, out.width = "80%", fig.align='center'}
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
 knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/ts_601_diag.png")
 knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/ts_106_diag.png")
 ```
@@ -187,29 +154,72 @@ Linear regression serves as a fundamental forecasting method. Multiple Linear Re
 Our methodology implements recursive prediction, with the initial model expressed as:
 $$
 \begin{aligned}
-P_{i,t+1} &= \beta_1 P_{i,t} + \beta_2 P_{i,t-1} + \\
-&\quad \beta_3 \text{QQQ}_{t} + \beta_4 \text{SPX}_{t}
+lnR_{i,t+1} &= \beta_1 lnR_{i,t} + \beta_2 lnR_{i,t-1} + \\
+&\quad \beta_3 lnR_{\text{QQQ}_{t}} + \beta_4 lnR_{\text{SPX}_{t}}
 \end{aligned}
 $$
-where $P_{i,t+1}$ represents the predicted price, $P_{i,t}$ and $P_{i,t-1}$ represent lagged prices, and $QQQ_t$, $SPX_t$ represent market indices at time t.
+where $lnR_{i,t+1}$ represents the predicted log return, $lnR_{i,t}$ and $lnR_{i,t-1}$ represent lagged log return, and $lnR_{\text{QQQ}_{t}}$, $lnR_{\text{SPX}_{t}}$ represent log return of market indices at time t.
 
 Model validation employs multiple diagnostic tests. We examine R-squared values and adjusted R-squared to assess model fit, F-statistics for overall significance, and t-statistics for individual variable significance. Residual analysis confirms assumptions of normality, homoscedasticity, and independence.
 
 The recursive prediction process follows these steps:
+
 1. Predict future price using lagged values
+
 2. Update the dataset with predicted values
+
 3. Adjust lagged variables for subsequent predictions
+
 4. Iterate for next time period prediction
+
 This recursive approach enables continuous updating of predictions while maintaining the temporal structure of the data.
+
+## 3.1.3 Long Short Term Memory Models
+Long Short-Term Memory networks represent an advanced deep learning architecture specifically designed for sequential data analysis. Unlike traditional neural networks, LSTM's unique memory cell structure enables effective capture of long-term dependencies in financial time series.
+
+Our LSTM implementation utilizes a sequential architecture with hyperparameter tuning across multiple configurations. 
+The model explores various hyperparameter combinations:
+
+* **LSTM units**: 50, 100, 200
+* **Activation functions**: ReLU, tanh
+* **Learning rates**: 0.001, 0.01, 0.1
+
+Training configuration employs:
+
+* Batch size of 32
+* 300 epochs
+* Adam optimizer
+* Mean Squared Error loss function
+
+The input features are structured as a 3D array (samples × timesteps × features), with normalized log returns as the primary input. Using the same methodology of MLR model, we perform recursive prediction method. We first perform a single-step prediction for model evaluation. Then, we feed the prediction back into the next step prediction. We perform the same method iteratively for 25 times. Each time, we use the last value in the period as our predicted value for 1 step ahead prediction.
+
+Model performance is evaluated using Root Mean Square Error (RMSE) as the primary metric, with the best-performing model selected based on minimum RMSE on the test set. 
+
+The best model has the features, and hyperparameters in the following graph:
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/LSTM_Model_Info.png")
+```
+
+
+During the training of the model, the loss plot indicates several issues.
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/LSTM_train_history.png")
+```
+Our model shows non-decreasing loss, and high variablity, which indicates that the training is not as effective.
+
+This is also shown in the test, where predicted captures most of the  flutations of values, but the variance is lower.
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/LSTM_Train_Test.png")
+```
 
 ## 3.2 Fitting the Frequentist Model(s)
 
 ## 3.2.1 Fitting Time Series Models
 
-We discovered that time series data is better for fitting short term future data. The variance of the prediction increases as long as forecasting period extends, limiting the ability to provide insightful prediction. 
+We found that time series data is more effective for fitting short-term future data. However, as the forecasting period extends, the variance of the predictions increases, limiting the model's ability to provide meaningful insights.
 
-We discovered that the ARIMA model predicts a slight increase in mean stock price.
-```{r, echo=FALSE, out.width = "60%", fig.align='center'}
+Additionally, we observed that the ARIMA model predicts a slight increase in the mean stock price.
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
 knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/CRM_ARIMA_forecast.png")
 ```
 
@@ -224,79 +234,214 @@ Analysis of the model coefficients, as shown in the regression summary, reveals 
 ```{r, echo=FALSE, out.width = "90%", fig.align='center'}
 knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/CRM_MLR_summary.png")
 ```
-However, the prediction is influenced by the fluctuations of stocks and is increased due to recursive prediction.
+However, we can see from the table that the R-squared value are small, meaning that only about 3% of the variance in crm_lr is explained by the predictors. This shows that the MLR approach is not as effective.
+
+
 ```{r, echo=FALSE, out.width = "90%", fig.align='center'}
-knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/CRM_MLR.png")
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/CRM_MLR_LogReturn.png")
 ```
-The visualization shows how the prediction intervals expand significantly as the forecast horizon extends, forming a characteristic "cone of uncertainty." This pattern is particularly evident in the latter portion of the forecast period, where the model's predictions exhibit increased oscillation and deviation from the central trend. This behavior underscores the limitations of recursive prediction in long-term forecasting applications, suggesting the model may be more reliable for shorter-term predictions where the cumulative impact of forecast errors remains contained.
+The visualization shows that the MLR prediction for log return falls in the median value of the actual log returns, but does not captures the changes at each time. This behavior underscores the limitations that the model may not be helpful on insights for short-term investment, but could only capture the long term trend.
 
-## 3.3 Portfolio Weight Assignment
-Our portfolio optimization methodology leverages the \textit{PerformanceAnalytics} R package to construct an efficient portfolio based on historical daily returns. While we currently demonstrate the approach using historical data, the methodology is designed to accommodate predicted future data for dynamic weight assignment across different time periods.
-
-### Optimal Framework
-The optimal portfolio weights, determined through our analysis, are distributed as follows:
-```{r, echo=FALSE, out.width = "60%", fig.align='center'}
-knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/Portfolio_Weight_Assignment.png")
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/CRM_MLR_Price.png")
 ```
-### Constraints and Objectives
+From the plot of price, we can see that the MLR prediction captures the correct trend of the stock, but does not provide details in price fluctuations.
 
-We use mean-variance optimization framework which incorporates two fundamental constraints:
+## 3.2.3 Fitting LSTM Models
 
-1. **Full Investment Constraint**:
-   \[ \sum_{i=1}^n w_i = 1 \]
-   where \(w_i\) represents the weight of asset i
-
-2. **Long-Only Constraint**:
-   \[ w_i \geq 0 \quad \forall i \]
-
-The objective function maximizes the Sharpe Ratio while considering two key components:
-
-\[ \text{Maximize} \quad \frac{E(R_p) - R_f}{\sigma_p} \]
-
-where: 
-
-* ***\(E(R_p)\)*** is the expected portfolio return
-* ***\(R_f\)*** is the risk-free rate
-* ***\(\sigma_p\)*** is the portfolio standard deviation
-
-We can see the result from the risk-reward visualization chart. This single point in  the chart indicates that the optimization algorithm has identified one specific portfolio allocation that maximizes the Sharpe ratio  given our constraints. 
-```{r, echo=FALSE, out.width = "60%", fig.align='center'}
-knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/risk_reward.png")
+The prediction shows a similar pattern for LSTM model as the MLR Model.
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/LSTM_Log_Return_Compare.png")
 ```
+
+We transform the log return back to the price to show the prediction.
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/CRM_LSTM_Price.png")
+```
+We can see that same as MLR, LSTM model also captures the overall increasing trend, but does not capture the fluctuations.
+
 \newpage
 
 # 4. Bayesian Analysis
 
-Propose the Bayesian analysis you will work on during the rest of the quarter in this session.
-
 ## 4.1 Proposed Bayesian Model(s)
 
-In this section, 
+### 4.1.1 Bayesian ARMA Model
+The Bayesian Model that will be explore in more depth is the Bayesian version of the frequentist ARMA model. Our model for the log return at time t is given by 
 
-* formulate the Bayesian model(s) you are going to use to analyze your dataset. Be sure to first define the notations involved in the model(s).
-* discuss how you will elicit the prior(s).
+$$R_t = \phi(R_{t-1}) + \epsilon_t, \epsilon_t \sim N(0, \sigma)$$
+
+where $R_t$ represents the log return at time t, $\phi$ represents the autocorrelation coefficient and $\sigma$ is the volatility of the stock.
+
+We will further make the assumptions that the returns at any time $t$ has mean 0, and that the error term $\epsilon_t$ is not correlated with the returns at the previous time $t-1$. Additionally, we are conducting this analysis under the condition that the process is stationary, i.e $|\phi| < 1$. Given this, we can obtain the distribution for $R_t$ by computing the variance:
+
+\begin{align*}
+Var[R_t] &= Var[\phi(R_{t-1}) + \epsilon_t] \\ 
+         &= \phi^2 Var[R_{t-1}] + Var[\epsilon_t] + 2\phi Cov(R_{t-1}, \epsilon_t) \\
+         &= \phi^2 Var[R_t] + \sigma^2 + 0 \\
+         &= \frac{\sigma^2}{1-\phi^2}\\
+\end{align*}
+
+Thus, we have that
+
+$$R_1 \sim N\Bigl(0, \sqrt{\frac{\sigma^2}{1-\phi^2}}\Bigl) = N\Bigl(0, \frac{\sigma}{\sqrt{1-\phi^2}}\Bigl)$$
+
+Then we have that for every future $R_t$, since we have $R_{t-1}$, it is distributed as
+
+$$R_t \sim N\Bigl(\phi R_{t-1}, \sigma\Bigl)$$
+
+For the priors on $\sigma$ and $\phi$, we will use the training data to compute approximate normal distributions for them. Then, to compute future returns, we will use the 20 previous closing prices prior to time $t$ as the likelihood, and compute the posterior distribution for $R_t$ for all $t$ in the test data set. 
+
+### 4.1.2 Markov Chain Monte Carlo
+
+This method refers to the method in the article "An alternative simulation method for stock price forecasting using Python" [@Medium]. 
+
+We assume that the stock price movement can be categorized into discrete states, and the probability of moving to a new state depends only on the current state.
+We define a transition matrix and state-dependent price changes. The model then simulates state transitions and applies the corresponding price changes.[@Medium]
+
+We define states of stock price going up, stagnant, or down by considering if the log return lies over, between, or below the upper threshold and lower threshold. We define the threshold as follows:
+
+* upper threshold = mean log return + std log return
+* lower threshold = mean log return - std log return
+
+Based on the training data, our transition matrix shows as follows:
+```{r, echo=FALSE, out.width = "60%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/transition_matrix.png")
+```
+For better visualization, we can view it as a weighted directed graph:
+```{r, echo=FALSE, out.width = "60%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/transition_matrix_graph.png")
+```
+where the weight of State A -> State B can be interpreted as the probability from State A to transition to State B in the next step.
+
+For stan model, we define a probability vector representing the transition probabilities to all other states as a parameter. 
+
+* We use the **Dirichlet Prior** for each row of the transition matrix, as the nature of this prior produces probability vectors that sum to 1, which fits the situation that each row of the transition matrix sum to 1. 
+* We use **Categorical Distribution** to model the probability of transitioning between states. The model fits the situation because each state transition represent a single choice from the possible next states, and the probability of all state transition sum to 1.
+
 
 ## 4.2 Fitting the Bayesian model(s)
 
-* Propose how you will fit the proposed Bayesian models.
+## 4.2.1 Fitting Bayesian ARMA Model
+The models were fitted through Bayesian inference using the stan() function from the rstan package. 
 
-* Propose how you will perform sensitivity analysis of the Bayesian models, i.e., how the posterior distribution is affected by the prior 
+Sensitivity analysis was done through looking at the trace plots at 50 day intervals of the test data. To ensure convergence, we used 5000 iterations and 4 chains for each fit. The trace plots are as follows:
 
-* Propose how you will check the MCMC convergence. 
+```{r, echo=FALSE, out.width = "60%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/trace_plots/trace1.png")
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/trace_plots/trace2.png")
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/trace_plots/trace3.png")
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/trace_plots/trace4.png")
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/trace_plots/trace5.png")
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/trace_plots/trace6.png")
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/trace_plots/trace7.png")
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/trace_plots/trace8.png")
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/trace_plots/trace9.png")
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/trace_plots/trace10.png")
+```
 
-## 4.3 Prediction
 
-In this section, propose how you can make predictions using the Bayesian model. 
+We can see from all the trace plots that there seems to be very good mix between the chains, and suggest convergence.
+
+To additionally check MCMC convergence, we used the monitor() function from the rstan package for each fit, and confirmed that all Rhat's satisfied Rhat < 1.05.
+
+### Prediction
+To make prediction on the log return, we conducted a random draw from the posterior distribution, $R_t \sim N\Bigl(\phi R_{t-1}, \sigma\Bigl)$, as derived earlier. We then did this at every test data point, and converted the log returns into a predicted price. Below is a graph showing the two predictions
+
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/Bayesian_CRM_Price.png")
+```
+
+From the graph we can see that the bayesian prediction captures the fluctuation of prices.
+
+<!-- \textit{Have some questions about analyzing of predictions - MSE? R^2? maybe others?, would want something that penalizes larger differences more (hence why maybe MSE)} -->
+
+## 4.2.2 Fitting Markov Chain Monte Carlo
+We preprocess data by mapping and labeling the states. The result after fitting the model shows as follows:
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/stan_diagnostic.png")
+```
+We see that for all transition matrices, the effective sample size is large enough, and Rhat = 1, which suggests that the chain converges.
+
+### Prediction
+To predict the stock price, we randomly sample one posterior distribution of transition matrices. We determine the next state based on transition probabilities.
+
+We then generate log returns using normal distributions based on each state.
+
+* Up State ~ $N(\mu + \sigma, \sigma)$
+* Down State ~ $N(\mu - \sigma, \sigma)$
+* Stagnant State ~ $N(\mu, \sigma)$
+
+where $\mu$ is the mean log return, $\sigma$ is the standard deviation of the log return.
+
+We then update the price prediction using the log return obtained.
+
+```{r, echo=FALSE, out.width = "90%", fig.align='center'}
+knitr::include_graphics("/Users/scarlett_hjq/Desktop/STAT27410/STAT27410-Final-Project/MCMC_Price.png")
+```
+The result shows that the chain gives a wide range of possible prices in predition, where the fan-like structure shows the increase in uncertainty of price.
 
 # 5. Discussion
 
-In this section, discuss how you can improve your model.
+Our comprehensive analysis of CRM stock prediction using multiple modeling approaches reveals several key insights and limitations:
+
+### Model Performance Comparison
+
+The three models - ARIMA(6,0,1), Multiple Linear Regression (MLR), and LSTM - each demonstrated distinct strengths and limitations:
+
+- **ARIMA Model**: Showed better performance in short-term predictions but does not perform well in long term predictions because of the iterative approach.
+
+- **MLR Model**: Despite its simplicity, achieved only modest predictive power with an R-squared value of approximately 3%. While it captured general trends, it failed to model the intricate price fluctuations characteristic of stock movements.
+
+- **LSTM Model**: Demonstrated potential in capturing non-linear relationships but suffered from training instability. The model's complexity did not translate to significantly better performance compared to simpler approaches.
+
+- **Bayesian ARMA Model**: Provides superior predictive effect compared to frequentist approaches. Captures the fluctuations instead of just showing an overall trend.
+
+- **MCMC Model**: Generates a wide range of possible future price trajectories that capture uncertainty in the market. The fan-like spread of predictions illustrates the increasing uncertainty in price movements over longer time, which is a more realistic representation of market behavior than single-point forecasts.
+
+### Methodological Insights
+
+1. **Data Transformation**:
+- The log return transformation proved effective in achieving stationarity and normalizing the data distribution
+- This transformation successfully stabilized variance across the time series, facilitating more reliable predictions
+
+2. **Prediction Horizon**:
+- All models showed degrading performance with extended prediction windows
+- Short-term predictions demonstrated higher reliability than longer-term forecasts
+- The compounding effect of prediction errors significantly impacts long-term forecast accuracy
+
+3. **Market Index Integration**:
+- The inclusion of market indices (QQQ, SPX) provided valuable context but did not substantially improve prediction accuracy
+- The high correlation between individual stocks and market indices suggests potential redundancy in the predictors
+
+### Limitations and Future Improvements
+
+1. **Model Enhancement Opportunities**:
+- Incorporate additional technical indicators (volatility measures)
+- Implement adaptive learning rates for LSTM to address training instability
+- More informative prior and more accurate likelihood in bayesian analysis
+
+2. **Data Considerations**:
+- Expand the feature set to include fundamental company metrics
+- Consider alternative data sources such as sentiment analysis from financial news
+- Investigate the impact of different time scales on prediction accuracy
+
+3. **Validation Methodology**:
+- Implement rolling window validation to better assess model stability
+- Develop more robust performance metrics for comparing model effectiveness
+- Consider economic significance alongside statistical significance
+
+### Practical Implications
+
+The analysis suggests that while sophisticated models can capture market trends, the inherent unpredictability of stock prices limits their practical application. The models serve better as tools for understanding market dynamics rather than as definitive predictive instruments for trading decisions.
 
 # 6. Contributions
 
-In this section, discuss the percentage of your contributions to the development final project proposal. Report the number of hours you have worked on the proposal, and the sections you are involved.
+Both team members, Andrew Su and Scarlett He, contributed equally to all aspects of this project, with each dedicating approximately 60 hours to its completion. The work was distributed collaboratively across all sections.
 
-Please also discuss briefly the contributions of your teammate(s), as well as the help and support you got from your teammates(s).
+The team maintained consistent communication throughout the project, meeting regularly to discuss progress, challenges, and next steps. Both team members provided valuable insights and support to each other.
+
+ 
 
 \newpage
 
@@ -311,3 +456,4 @@ https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main
 
 https://raw.githubusercontent.com/asu1-1/STAT27410-Final-Project/refs/heads/main/Scarlett_part1_code.R
 
+https://medium.com/@simonleung5jobs/an-alternative-simulation-method-for-stock-price-forecasting-using-python-1bc1649edb99
